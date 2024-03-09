@@ -74,6 +74,12 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  void _reset() {
+    setState(() {
+      _counter = 0;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called, for instance as done
@@ -132,7 +138,8 @@ class _MyHomePageState extends State<MyHomePage> {
                   child: const Icon(Icons.remove),
                 ),
               ]
-            )
+            ),
+            TextButton(onPressed: _reset, child: Text("Reset", style: TextStyle(color: Colors.red),))
           ],
         ),
       ),
