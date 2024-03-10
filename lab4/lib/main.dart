@@ -1,15 +1,22 @@
 import 'dart:async';
+import 'dart:ffi';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
+import 'package:maps_launcher/maps_launcher.dart';
+import 'package:toggle_switch/toggle_switch.dart';
 
 void main() {
   runApp(const MyApp());
 }
 
+int _likeCounter = 0;
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -25,6 +32,7 @@ class MyApp extends StatelessWidget {
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
+
   final String title;
 
   @override
@@ -40,11 +48,22 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   String _fileContents = "";
+
   Future<void> loadAsset() async {
     String fileText = await rootBundle.loadString('assets/text.txt');
     setState(() {
       _fileContents = fileText;
     });
+  }
+
+  _callNumber() async {
+    const number = '88005553535'; //set the number here
+    return await FlutterPhoneDirectCaller.callNumber(number);
+  }
+
+  _buildRoute() async {
+    MapsLauncher.launchQuery(
+        'Краснодар, улица Калинина 13, корпус 20, Общежитие 20');
   }
 
   @override
@@ -54,19 +73,81 @@ class _MyHomePageState extends State<MyHomePage> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
       ),
-      body: ListView(
-        children: [
-          Image.asset('assets/dormitoryImg.png'),
+      body: ListView(children: [
+        Image.asset('assets/dormitoryImg.png'),
+        Container(
+            margin: const EdgeInsets.all(15.0),
+            padding: const EdgeInsets.all(3.0),
+            child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(children: [
+                    Expanded(
+                        flex: 4,
+                        child: Container(
+                            child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              margin: const EdgeInsets.all(5.0),
+                              child: const Text("Общежитие №20",
+                                  style:
+                                      TextStyle(fontWeight: FontWeight.bold)),
+                            ),
+                            Container(
+                                margin: const EdgeInsets.only(left: 5.0),
+                                child: Text("Краснодар, ул. Калинина 13к20",
+                                    style: TextStyle(
+                                        color: Colors.black.withOpacity(0.5)))),
+                          ],
+                        ))),
+                    Expanded(flex: 1, child: Container(child: LikeButton())),
+                    Text(_likeCounter.toString())
+                  ]),
+                  Container(
+                      margin: const EdgeInsets.all(15.0),
+                      padding: const EdgeInsets.all(3.0),
+                      child: Row(
+                        children: [
+                          TextButton(
+                              onPressed: _buildRoute, child: Text("Route")),
+                          TextButton(
+                              onPressed: _callNumber, child: Text("Call")),
+                        ],
+                      )),
+                  Flexible(child: Text(_fileContents)),
+                ]))
+      ]),
+    );
+  }
+}
 
-          Row(),
-          Row(
-            children: [
-              Flexible(child: Text(_fileContents)),
-            ],
-          ),
+class LikeButton extends StatefulWidget {
+  @override
+  _LikeButtonState createState() => _LikeButtonState();
+}
 
-        ]
+class _LikeButtonState extends State<LikeButton> {
+  bool isLiked = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      icon: Icon(
+        isLiked ? Icons.favorite : Icons.favorite_border,
+        color: isLiked ? Colors.red : null,
       ),
+      onPressed: () {
+        setState(() {
+          isLiked = !isLiked;
+          if (isLiked) {
+            _likeCounter++;
+          } else {
+            _likeCounter--;
+          }
+        });
+      },
     );
   }
 }
