@@ -1,5 +1,5 @@
 ### lab2 heading
 
-**bold text**
-*italic text
+**bold text**<br>
+*italic text*<br>
 ***bold italic text***
