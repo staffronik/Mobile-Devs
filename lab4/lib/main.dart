@@ -1,18 +1,13 @@
 import 'dart:async';
-import 'dart:ffi';
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 import 'package:maps_launcher/maps_launcher.dart';
-import 'package:toggle_switch/toggle_switch.dart';
+import 'package:share_plus/share_plus.dart';
 
 void main() {
   runApp(const MyApp());
 }
-
-int _likeCounter = 0;
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -47,6 +42,8 @@ class _MyHomePageState extends State<MyHomePage> {
     loadAsset();
   }
 
+  int _likeCounter = 5;
+  bool isLiked = false;
   String _fileContents = "";
 
   Future<void> loadAsset() async {
@@ -54,6 +51,13 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       _fileContents = fileText;
     });
+  }
+
+  Future<void> _shareImage() async {
+    XFile file = await XFile('assets/dormitoryImg.png');
+    List<XFile> s = [];
+    s.add(file);
+    await Share.shareXFiles(s);
   }
 
   _callNumber() async {
@@ -102,8 +106,28 @@ class _MyHomePageState extends State<MyHomePage> {
                                         color: Colors.black.withOpacity(0.5)))),
                           ],
                         ))),
-                    Expanded(flex: 1, child: Container(child: LikeButton())),
-                    Text(_likeCounter.toString())
+                    Expanded(
+                      flex: 1,
+                      child: Container(
+                        child: IconButton(
+                          icon: Icon(
+                            isLiked ? Icons.favorite : Icons.favorite_border,
+                            color: isLiked ? Colors.red : null,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              isLiked = !isLiked;
+                              if (isLiked) {
+                                _likeCounter++;
+                              } else {
+                                _likeCounter--;
+                              }
+                            });
+                          },
+                        ),
+                      ),
+                    ),
+                    Text(_likeCounter.toString()),
                   ]),
                   Container(
                       margin: const EdgeInsets.all(15.0),
@@ -114,40 +138,15 @@ class _MyHomePageState extends State<MyHomePage> {
                               onPressed: _buildRoute, child: Text("Route")),
                           TextButton(
                               onPressed: _callNumber, child: Text("Call")),
+                          TextButton(
+                            onPressed: _shareImage,
+                            child: Text("Share"),
+                          )
                         ],
                       )),
                   Flexible(child: Text(_fileContents)),
                 ]))
       ]),
-    );
-  }
-}
-
-class LikeButton extends StatefulWidget {
-  @override
-  _LikeButtonState createState() => _LikeButtonState();
-}
-
-class _LikeButtonState extends State<LikeButton> {
-  bool isLiked = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return IconButton(
-      icon: Icon(
-        isLiked ? Icons.favorite : Icons.favorite_border,
-        color: isLiked ? Colors.red : null,
-      ),
-      onPressed: () {
-        setState(() {
-          isLiked = !isLiked;
-          if (isLiked) {
-            _likeCounter++;
-          } else {
-            _likeCounter--;
-          }
-        });
-      },
     );
   }
 }
