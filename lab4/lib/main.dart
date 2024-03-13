@@ -1,8 +1,10 @@
 import 'dart:async';
+import "dart:io";
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 import 'package:maps_launcher/maps_launcher.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 void main() {
@@ -15,6 +17,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Lab4',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
@@ -54,10 +57,14 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> _shareImage() async {
-    XFile file = await XFile('assets/dormitoryImg.png');
-    List<XFile> s = [];
-    s.add(file);
-    await Share.shareXFiles(s);
+    final dir = await getTemporaryDirectory();
+    final byte = (await rootBundle.load("assets/dormitoryImg.png"))
+        .buffer
+        .asUint8List(); // convert in to Uint8List
+    final file = File("${dir.path}/dormitoryImg.png"); // import 'dart:io'
+    await file.writeAsBytes(byte);
+    // Share
+    await Share.shareXFiles([XFile(file.path)], text: _fileContents);
   }
 
   _callNumber() async {
@@ -134,14 +141,30 @@ class _MyHomePageState extends State<MyHomePage> {
                       padding: const EdgeInsets.all(3.0),
                       child: Row(
                         children: [
-                          TextButton(
-                              onPressed: _buildRoute, child: Text("Route")),
-                          TextButton(
-                              onPressed: _callNumber, child: Text("Call")),
-                          TextButton(
-                            onPressed: _shareImage,
-                            child: Text("Share"),
-                          )
+                          Expanded(
+                              flex: 1,
+                              child: IconButton(
+                                color: Colors.green,
+                                icon: Icon(Icons.navigation),
+                                onPressed: _buildRoute,
+                                tooltip: "Show route",
+                              )),
+                          Expanded(
+                              flex: 1,
+                              child: IconButton(
+                                color: Colors.green,
+                                icon: Icon(Icons.call),
+                                onPressed: _callNumber,
+                                tooltip: "Make a call",
+                              )),
+                          Expanded(
+                              flex: 1,
+                              child: IconButton(
+                                color: Colors.green,
+                                icon: const Icon(Icons.share),
+                                onPressed: _shareImage,
+                                tooltip: "Share",
+                              ))
                         ],
                       )),
                   Flexible(child: Text(_fileContents)),
